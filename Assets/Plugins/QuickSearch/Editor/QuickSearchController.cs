@@ -7,8 +7,13 @@ namespace QuickSearch {
 	public static class QuickSearchController {
 		private static QuickSearchWindow window_ = null;
 
-		[MenuItem("Window/QuickSearch %,")]
-		private static void OpenQuickSearch () {
+		[MenuItem("Window/Toggle QuickSearch %,")]
+		private static void ToggleQuickSearch () {
+			if (QuickSearchWindow.Active != null) {
+				QuickSearchWindow.Active.Close();
+				return;
+			}
+
 			window_ = EditorWindow.CreateInstance<QuickSearchWindow>();
 			window_.OnQueryChanged += OnQueryChanged;
 			window_.OnSelect += OnSelect;

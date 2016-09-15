@@ -7,6 +7,8 @@ using UnityEngine;
 namespace QuickSearch {
 
 	public sealed class QuickSearchWindow : EditorWindow {
+		public static QuickSearchWindow Active { get; private set; }
+
 		private const int VISIBLE_RESULTS = 7;
 		public static readonly Vector2 WINDOW_SIZE = new Vector2(700, (VISIBLE_RESULTS + 1) * QuickSearchGUI.ELEM_HEIGHT + QuickSearchGUI.HEAD_HEIGHT);
 
@@ -28,7 +30,7 @@ namespace QuickSearch {
 		private bool trySelectAllQueryField_ = false;
 		private bool dontRestoreSelection_ = false;
 
-		private string query_ = "";
+		private static string query_ = "";
 		private string oldQuery_ = null;
 		private UnityEngine.Object[] oldSelections_ = null;
 
@@ -40,9 +42,14 @@ namespace QuickSearch {
 			maxSize = WINDOW_SIZE;
 
 			oldSelections_ = Selection.objects;
+
+			Active = this;
 		}
 
 		private void OnDisable () {
+			if (Active == this)
+				Active = null;
+
 			if (!dontRestoreSelection_)
 				Selection.objects = oldSelections_;
 
@@ -61,6 +68,7 @@ namespace QuickSearch {
 
 			GUI.SetNextControlName("queryField");
 			query_ = gui_.DrawQueryField(query_);
+
 			ProcessTrySelectAll();
 
 			if (oldQuery_ != query_) {
@@ -126,19 +134,22 @@ namespace QuickSearch {
 		}
 
 		private void ProcessTryFocusQueryField () {
-			if (tryFocusQueryField_) {
-				EditorGUI.FocusTextInControl("queryField");
-				tryFocusQueryField_ = false;
-			}
+			if (!tryFocusQueryField_)
+				return;
+
+			EditorGUI.FocusTextInControl("queryField");
+			tryFocusQueryField_ = false;
 		}
 
 		private void ProcessTrySelectAll () {
-			if (trySelectAllQueryField_) {
-				var textEditor = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
-				if (textEditor != null)
-					textEditor.SelectAll();
-				trySelectAllQueryField_ = false;
+			if (!trySelectAllQueryField_)
+				return;
+
+			var textEditor = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
+			if (textEditor != null) {
+				textEditor.SelectAll();
 			}
+			trySelectAllQueryField_ = false;
 		}
 
 		public void Escape () {
