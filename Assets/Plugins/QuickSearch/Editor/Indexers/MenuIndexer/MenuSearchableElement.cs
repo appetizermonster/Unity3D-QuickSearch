@@ -10,12 +10,14 @@ namespace QuickSearch {
 		private readonly string menuPath_ = null;
 		private readonly string contents_ = null;
 		private readonly string title_ = null;
+		private readonly bool markExperimental_ = false;
 
 		private readonly Action action_ = null;
 
-		public MenuSearchableElement (string menuPath, Action action  = null) {
+		public MenuSearchableElement (string menuPath, Action action = null, bool markExperimental = false) {
 			menuPath_ = menuPath;
 			action_ = action;
+			markExperimental_ = markExperimental;
 
 			// Remove hot keys
 			var sanitizedPath = SanitizeMenuPath(menuPath);
@@ -80,7 +82,10 @@ namespace QuickSearch {
 
 		string ISearchableElement.Description {
 			get {
-				return contents_;
+				var desc = contents_;
+				if (markExperimental_)
+					desc += " (experimental)";
+				return desc;
 			}
 		}
 
