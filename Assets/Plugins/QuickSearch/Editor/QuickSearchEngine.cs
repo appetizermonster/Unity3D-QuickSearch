@@ -97,9 +97,12 @@ namespace QuickSearch {
 			var cursor = 0;
 
 			for (var i = 0; i < contents.Length; ++i) {
-				// If there is no more another query character
-				if (cursor >= query.Length)
+				// if there is no more another query character
+				if (cursor >= query.Length) {
+					// disadvantage on early break
+					sum *= 0.95f;
 					break;
+				}
 
 				var contentsChr = char.ToLowerInvariant(contents[i]);
 				var queryChr = char.ToLowerInvariant(query[cursor]);
