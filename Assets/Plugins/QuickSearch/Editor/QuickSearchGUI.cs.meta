@@ -1,11 +1,14 @@
 fileFormatVersion: 2
 guid: f2575bd07cf1afb4c901044650699b58
-timeCreated: 1473948220
+timeCreated: 1473954050
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - guiSkin: {fileID: 11400000, guid: 204ad1a183a21904a8fd300d4aa9347d, type: 2}
+  - bg: {fileID: 2800000, guid: c496e8d080370fc4f9f728547ebbf293, type: 3}
+  - empty: {fileID: 2800000, guid: 6ed859493c70c3b4593920848726a0e3, type: 3}
+  - searchIcon: {fileID: 2800000, guid: 0aa816038de98744b9ae07a66a46a8d5, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -1,38 +1,50 @@
-﻿using UnityEngine;
+﻿using System.Collections;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace QuickSearch
-{
+namespace QuickSearch {
 
-    public static class QuickSearchController
-    {
-        private static QuickSearchWindow window_ = null;
+	public static class QuickSearchController {
+		private static QuickSearchWindow window_ = null;
 
-        [MenuItem("Window/QuickSearch %,")]
-        private static void OpenQuickSearch()
-        {
-            window_ = EditorWindow.GetWindow<QuickSearchWindow>();
-            window_.OnQueryChanged += OnQueryChanged;
-            window_.OnSelect += OnSelect;
+		[MenuItem("Window/QuickSearch %,")]
+		private static void OpenQuickSearch () {
+			window_ = EditorWindow.CreateInstance<QuickSearchWindow>();
+			window_.OnQueryChanged += OnQueryChanged;
+			window_.OnSelect += OnSelect;
+			window_.OnExecute += OnExecute;
 
-            window_.Show();
-            window_.FocusOnQueryField();
-        }
+			var centerPos = EditorWindowUtility.GetCenterPosition(QuickSearchWindow.WINDOW_SIZE);
+			window_.position = centerPos;
+			window_.ShowAsDropDown(centerPos, QuickSearchWindow.WINDOW_SIZE);
+			window_.FocusOnQueryField();
 
-        private static void OnQueryChanged(string query)
-        {
-            var engine = QuickSearchEngine.Instance;
-            var searchedElements = engine.FindElements(query);
+			QuickSearchEngine.Instance.EmitOpen();
+		}
 
-            window_.List.Clear();
-            window_.List.AddRange(searchedElements);
-            window_.SetSelectedIndex(0);
-        }
+		private static void OnQueryChanged (string query) {
+			var engine = QuickSearchEngine.Instance;
+			var searchedElements = engine.FindElements(query);
 
-        private static void OnSelect(ISearchableElement element)
-        {
-            element.Select();
-        }
-    }
+			window_.List.Clear();
+			window_.List.AddRange(searchedElements);
+			window_.SetSelectedIndex(0);
+		}
+
+		private static void OnSelect (ISearchableElement element) {
+			element.Select();
+
+			EditorApplication.delayCall += () => {
+				if (window_ != null)
+					window_.Focus();
+			};
+		}
+
+		private static void OnExecute (ISearchableElement element) {
+			element.Execute();
+
+			if (window_ != null)
+				window_.CloseWithoutRestoreSelection();
+		}
+	}
 }
