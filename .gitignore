@@ -1,0 +1,7 @@
+/Temp/
+/ProjectSettings/
+/Library/
+
+*.csproj
+*.suo
+*.sln
