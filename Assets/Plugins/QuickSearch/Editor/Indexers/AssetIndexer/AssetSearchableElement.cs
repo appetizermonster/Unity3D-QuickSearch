@@ -90,6 +90,7 @@ namespace QuickSearch {
 			var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath_);
 			Selection.activeObject = obj;
 			EditorGUIUtility.PingObject(obj);
+			EditorUtility.FocusProjectWindow();
 		}
 	}
 }

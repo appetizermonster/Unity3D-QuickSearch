@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEditor;
 using UnityEngine;
+using System.Reflection;
 
 namespace QuickSearch {
 
@@ -62,6 +63,9 @@ namespace QuickSearch {
 		private void _Select () {
 			Selection.activeGameObject = gameObject_;
 			EditorGUIUtility.PingObject(gameObject_);
-		}
+
+			// Set Focus on Hierarchy Window
+			EditorApplication.ExecuteMenuItem("Window/Hierarchy");
+        }
 	}
 }

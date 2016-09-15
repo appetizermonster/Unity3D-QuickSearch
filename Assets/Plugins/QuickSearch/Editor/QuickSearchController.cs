@@ -41,10 +41,10 @@ namespace QuickSearch {
 		}
 
 		private static void OnExecute (ISearchableElement element) {
-			element.Execute();
-
 			if (window_ != null)
 				window_.CloseWithoutRestoreSelection();
+
+			element.Execute();
 		}
 	}
 }
