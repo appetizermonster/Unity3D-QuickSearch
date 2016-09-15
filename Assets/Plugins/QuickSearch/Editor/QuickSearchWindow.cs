@@ -32,6 +32,8 @@ namespace QuickSearch {
 
 		private static string query_ = "";
 		private string oldQuery_ = null;
+		private bool isDragging_ = false;
+
 		private UnityEngine.Object[] oldSelections_ = null;
 
 		private void OnEnable () {
@@ -54,6 +56,13 @@ namespace QuickSearch {
 				Selection.objects = oldSelections_;
 
 			ScriptableObject.DestroyImmediate(gui_);
+		}
+
+		private void Update () {
+			WatchDragEnd();
+
+			if (EditorWindow.focusedWindow != this && !isDragging_)
+				Close();
 		}
 
 		private void OnGUI () {
@@ -92,12 +101,43 @@ namespace QuickSearch {
 					var element = list_[i];
 					var isSelected = (selectedIndex_ == i);
 
-					gui_.DrawSearchElement(element, isSelected);
+					gui_.DrawSearchElement(element, isSelected, OnElementClick, OnElementDrag);
 				}
 			} else {
 				// no results
 				gui_.DrawEmpty();
 			}
+		}
+
+		private void OnElementClick (ISearchableElement elem) {
+			var idx = List.IndexOf(elem);
+			if (idx < 0)
+				return;
+
+			SetSelectedIndex(idx);
+			Repaint();
+		}
+
+		private void OnElementDrag (ISearchableElement elem) {
+			if (!elem.SupportDrag || elem.DragObject == null)
+				return;
+
+			DragAndDrop.PrepareStartDrag();
+			DragAndDrop.objectReferences = new[] { elem.DragObject };
+			DragAndDrop.StartDrag("Dragging Object");
+
+			isDragging_ = true;
+		}
+
+		private void WatchDragEnd () {
+			if (!isDragging_)
+				return;
+			if (DragAndDrop.objectReferences.Length > 0)
+				return;
+
+			// End of drag
+			isDragging_ = false;
+			Focus();
 		}
 
 		private void ProcessKeyboardEvents () {

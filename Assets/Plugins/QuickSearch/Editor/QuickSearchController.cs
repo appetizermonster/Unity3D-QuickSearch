@@ -20,8 +20,9 @@ namespace QuickSearch {
 			window_.OnExecute += OnExecute;
 
 			var centerPos = EditorWindowUtility.GetCenterPosition(QuickSearchWindow.WINDOW_SIZE);
+			window_.ShowPopup();
 			window_.position = centerPos;
-			window_.ShowAsDropDown(centerPos, QuickSearchWindow.WINDOW_SIZE);
+			window_.Focus();
 			window_.FocusOnQueryField();
 
 			QuickSearchEngine.Instance.EmitOpen();

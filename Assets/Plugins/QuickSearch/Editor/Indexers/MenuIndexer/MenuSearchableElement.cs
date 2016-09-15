@@ -103,6 +103,18 @@ namespace QuickSearch {
 			}
 		}
 
+		bool ISearchableElement.SupportDrag {
+			get {
+				return false;
+			}
+		}
+
+		UnityEngine.Object ISearchableElement.DragObject {
+			get {
+				return null;
+			}
+		}
+
 		void ISearchableElement.Select () {
 		}
 

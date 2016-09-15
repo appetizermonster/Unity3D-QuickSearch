@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using UnityEditor;
 using UnityEngine;
 
@@ -64,7 +65,9 @@ namespace QuickSearch {
 			return newQuery;
 		}
 
-		public void DrawSearchElement (ISearchableElement element, bool selected) {
+		public void DrawSearchElement (ISearchableElement element, bool selected,
+										Action<ISearchableElement> onMouseDown,
+										Action<ISearchableElement> onDrag) {
 			var bgRect = new Rect(0f, lastRect_.yMax, WIDTH, ELEM_HEIGHT);
 			var bgStyle = guiSkin.GetStyle(selected ? "elem_bg_selected" : "elem_bg_normal");
 
@@ -83,6 +86,17 @@ namespace QuickSearch {
 			var descRect = new Rect(bgRect.x + 35f, bgRect.y + 23f, WIDTH, 25f);
 			var descStyle = guiSkin.GetStyle("desc_normal");
 			GUI.Label(descRect, element.Description, descStyle);
+
+			var evt = Event.current;
+			if (bgRect.Contains(Event.current.mousePosition)) {
+				if (evt.type == EventType.MouseDown && onMouseDown != null) {
+					onMouseDown(element);
+					evt.Use();
+				} else if (evt.type == EventType.MouseDrag && onDrag != null) {
+					onDrag(element);
+					evt.Use();
+				}
+			}
 		}
 	}
 }

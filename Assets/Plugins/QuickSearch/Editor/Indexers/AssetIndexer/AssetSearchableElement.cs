@@ -78,6 +78,18 @@ namespace QuickSearch {
 			}
 		}
 
+		bool ISearchableElement.SupportDrag {
+			get {
+				return true;
+			}
+		}
+
+		UnityEngine.Object ISearchableElement.DragObject {
+			get {
+				return AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath_);
+			}
+		}
+
 		void ISearchableElement.Select () {
 			_Select(false);
 		}
