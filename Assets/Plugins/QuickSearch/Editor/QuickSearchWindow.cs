@@ -34,6 +34,7 @@ namespace QuickSearch {
 
 		private void OnEnable () {
 			gui_ = ScriptableObject.CreateInstance<QuickSearchGUI>();
+			gui_.hideFlags = HideFlags.HideAndDontSave;
 
 			minSize = WINDOW_SIZE;
 			maxSize = WINDOW_SIZE;
@@ -44,6 +45,8 @@ namespace QuickSearch {
 		private void OnDisable () {
 			if (!dontRestoreSelection_)
 				Selection.objects = oldSelections_;
+
+			ScriptableObject.DestroyImmediate(gui_);
 		}
 
 		private void OnGUI () {
