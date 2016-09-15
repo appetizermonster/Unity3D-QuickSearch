@@ -53,19 +53,21 @@ namespace QuickSearch {
 		}
 
 		void ISearchableElement.Select () {
-			_Select();
+			_Select(false);
 		}
 
 		void ISearchableElement.Execute () {
-			_Select();
+			_Select(true);
 		}
 
-		private void _Select () {
+		private void _Select (bool focus) {
 			Selection.activeGameObject = gameObject_;
 			EditorGUIUtility.PingObject(gameObject_);
 
-			// Set Focus on Hierarchy Window
-			EditorApplication.ExecuteMenuItem("Window/Hierarchy");
+			if (focus) {
+				// Set Focus on Hierarchy Window
+				EditorApplication.ExecuteMenuItem("Window/Hierarchy");
+			}
         }
 	}
 }

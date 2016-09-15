@@ -79,18 +79,20 @@ namespace QuickSearch {
 		}
 
 		void ISearchableElement.Select () {
-			_Select();
+			_Select(false);
 		}
 
 		void ISearchableElement.Execute () {
-			_Select();
+			_Select(true);
 		}
 
-		private void _Select () {
+		private void _Select (bool focus) {
 			var obj = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath_);
 			Selection.activeObject = obj;
 			EditorGUIUtility.PingObject(obj);
-			EditorUtility.FocusProjectWindow();
+
+			if (focus)
+				EditorUtility.FocusProjectWindow();
 		}
 	}
 }
