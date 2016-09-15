@@ -122,6 +122,7 @@ namespace QuickSearch {
 					cursor += 1;
 				} else {
 					score *= 0.8f;
+					score = Mathf.Max(score, 3f);
 				}
 			}
 			// if query has rest characters
