@@ -9,11 +9,11 @@ namespace QuickSearch {
 		private readonly float priority_ = 1f;
 
 		private readonly bool isFolder_ = false;
+		private readonly bool isTexture_ = false;
+
 		private readonly string assetPath_ = null;
 		private readonly string assetFilename_ = null;
 		private readonly string assetExt_ = null;
-
-		private readonly Texture2D resIcon_ = null;
 
 		public AssetSearchableElement (string assetPath) {
 			assetPath_ = assetPath;
@@ -26,10 +26,13 @@ namespace QuickSearch {
 			if (Directory.Exists(assetPath_)) {
 				isFolder_ = true;
 				assetExt_ = "folder";
+			} else {
+				isTexture_ = (
+					assetExt_ == "png" || assetExt_ == "psd"
+					|| assetExt_ == "jpg" || assetExt_ == "tga" || assetExt_ == "tif"
+					|| assetExt_ == "bmp"
+				);
 			}
-
-			if (assetExt_ == "png" || assetExt_ == "psd" || assetExt_ == "jpg")
-				resIcon_ = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath_);
 		}
 
 		string ISearchableElement.PrimaryContents {
@@ -52,8 +55,11 @@ namespace QuickSearch {
 
 		Texture2D ISearchableElement.Icon {
 			get {
-				if (resIcon_ != null)
-					return resIcon_;
+				if (isTexture_) {
+					var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath_);
+					if (texture != null)
+						return texture;
+				}
 				return AssetIcons.GetIcon(assetExt_);
 			}
 		}
