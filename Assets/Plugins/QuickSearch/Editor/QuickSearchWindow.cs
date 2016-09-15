@@ -25,6 +25,7 @@ namespace QuickSearch {
 		public int SelectedIndex { get { return selectedIndex_; } }
 
 		private QuickSearchGUI gui_ = null;
+		private Texture backgroundTexture_ = null;
 
 		private bool tryFocusQueryField_ = false;
 		private bool trySelectAllQueryField_ = false;
@@ -54,8 +55,31 @@ namespace QuickSearch {
 
 			if (!dontRestoreSelection_)
 				Selection.objects = oldSelections_;
+			if (backgroundTexture_ != null)
+				Texture.DestroyImmediate(backgroundTexture_);
 
 			ScriptableObject.DestroyImmediate(gui_);
+		}
+
+		public void PrepareBackgroundTexture (Rect windowRect) {
+			var position = windowRect.position;
+			var width = (int)windowRect.width;
+			var height = (int)windowRect.height;
+
+			if (width <= 0 || height <= 0)
+				return;
+
+			var pixels = UnityEditorInternal.InternalEditorUtility.ReadScreenPixel(position, width, height);
+			var baseTex = new Texture2D(width, height, TextureFormat.RGBA32, false);
+			baseTex.hideFlags = HideFlags.DontSave;
+			baseTex.SetPixels(pixels);
+			baseTex.Apply();
+
+			var blurOptions = new BlurOptions();
+			var blurTexture = BlurUtility.BlurTexture(baseTex, blurOptions);
+
+			Texture2D.DestroyImmediate(baseTex);
+			backgroundTexture_ = blurTexture;
 		}
 
 		private void Update () {
@@ -72,7 +96,7 @@ namespace QuickSearch {
 		}
 
 		private void DrawGUI () {
-			gui_.StartGUI(new Rect(0, 0, WINDOW_SIZE.x, WINDOW_SIZE.y));
+			gui_.StartGUI(new Rect(0, 0, WINDOW_SIZE.x, WINDOW_SIZE.y), backgroundTexture_);
 			gui_.DrawHead();
 
 			GUI.SetNextControlName("queryField");

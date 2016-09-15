@@ -40,11 +40,11 @@ namespace QuickSearch {
 			throw new System.NotSupportedException("Can't find internal main window. Maybe something has changed inside Unity");
 		}
 
-		public static Rect GetCenterPosition (Vector2 windowSize) {
+		public static Rect GetCenterRect (Vector2 windowSize) {
 			var main = GetEditorMainWindowPos();
 			float w = (main.width - windowSize.x) * 0.5f;
 			float h = (main.height - windowSize.y) * 0.5f;
-			return new Rect(main.x + w, main.y + h, 0, 0);
+			return new Rect(main.x + w, main.y + h, windowSize.x, windowSize.y);
 		}
 	}
 }

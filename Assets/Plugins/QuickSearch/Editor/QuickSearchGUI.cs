@@ -25,12 +25,16 @@ namespace QuickSearch {
 		private Rect lastRect_;
 		private Rect size_;
 
-		public void StartGUI (Rect size) {
+		public void StartGUI (Rect size, Texture backgroundTexture) {
 			lastRect_ = new Rect();
 			size_ = size;
 
 			GUI.skin = guiSkin;
-			GUI.DrawTexture(size, bg);
+
+			if (backgroundTexture != null)
+				GUI.DrawTexture(size, backgroundTexture);
+			else
+				GUI.DrawTexture(size, bg);
 		}
 
 		public void DrawHead () {
@@ -84,7 +88,7 @@ namespace QuickSearch {
 			GUI.Label(titleRect, element.Title, titleStyle);
 
 			var descRect = new Rect(bgRect.x + 35f, bgRect.y + 23f, WIDTH, 25f);
-			var descStyle = guiSkin.GetStyle("desc_normal");
+			var descStyle = guiSkin.GetStyle(selected ? "desc_selected" : "desc_normal");
 			GUI.Label(descRect, element.Description, descStyle);
 
 			var evt = Event.current;
