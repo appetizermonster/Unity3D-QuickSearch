@@ -8,6 +8,7 @@ namespace QuickSearch {
 	public sealed class AssetSearchableElement : ISearchableElement {
 		private readonly float priority_ = 1f;
 
+		private readonly bool isFolder_ = false;
 		private readonly string assetPath_ = null;
 		private readonly string assetFilename_ = null;
 		private readonly string assetExt_ = null;
@@ -22,8 +23,10 @@ namespace QuickSearch {
 			if (assetExt_.Length > 0)
 				assetExt_ = assetExt_.Substring(1);
 
-			if (Directory.Exists(assetPath_))
+			if (Directory.Exists(assetPath_)) {
+				isFolder_ = true;
 				assetExt_ = "folder";
+			}
 
 			if (assetExt_ == "png" || assetExt_ == "psd" || assetExt_ == "jpg")
 				resIcon_ = AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath_);
@@ -57,6 +60,8 @@ namespace QuickSearch {
 
 		string ISearchableElement.Title {
 			get {
+				if (isFolder_)
+					return assetFilename_;
 				return Path.GetFileNameWithoutExtension(assetFilename_);
 			}
 		}
