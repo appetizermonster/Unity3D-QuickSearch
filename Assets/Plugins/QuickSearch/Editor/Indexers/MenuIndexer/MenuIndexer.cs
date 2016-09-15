@@ -80,7 +80,7 @@ namespace QuickSearch {
 			IndexHiddenMenuForWindows("File/Save Project", 0x9C69);
 
 			IndexHiddenMenuForWindows("File/Build Settings...", 0x9C73);
-			IndexHiddenMenuForWindows("File/Build && Run", 0x9C74);
+			IndexHiddenMenuForWindows("File/Build & Run", 0x9C74);
 
 			// Edit
 			IndexHiddenMenuForWindows("Edit/Preferences...", 0x9C72);

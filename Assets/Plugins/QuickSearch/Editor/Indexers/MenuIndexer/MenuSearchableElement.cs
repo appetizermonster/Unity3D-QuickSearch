@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,21 +32,34 @@ namespace QuickSearch {
 				title_ = sanitizedPath;
 		}
 
+		private static readonly Regex removeCtrlRegex_ = new Regex(@" ?(%[^% ]+)$");
+		private static readonly Regex removeShiftRegex_ = new Regex(@" ?(#[^# ]+)$");
+		private static readonly Regex removeAltRegex_ = new Regex(@" ?(&[^& ]+)$");
+		private static readonly Regex removeUnderscoreIdx_ = new Regex(@" ?(_[^_ ]+)$");
+
 		private static string SanitizeMenuPath (string menuPath) {
 			var _path = menuPath;
-			var ctrlIdx = _path.LastIndexOf("%");
-			var shiftIdx = _path.LastIndexOf("#");
-			var altIdx = _path.LastIndexOf("&");
-			var underscoreIdx = _path.LastIndexOf("_");
+			var hotkeyIdx = 5000;
 
-			if (ctrlIdx > 0)
-				_path = _path.Substring(0, ctrlIdx);
-			else if (shiftIdx > 0)
-				_path = _path.Substring(0, shiftIdx);
-			else if (altIdx > 0)
-				_path = _path.Substring(0, altIdx);
-			else if (underscoreIdx > 0)
-				_path = _path.Substring(0, underscoreIdx);
+			var ctrl = removeCtrlRegex_.Match(menuPath);
+			if (ctrl.Success)
+				hotkeyIdx = Mathf.Min(ctrl.Index, hotkeyIdx);
+
+			var shift = removeShiftRegex_.Match(menuPath);
+			if (shift.Success)
+				hotkeyIdx = Mathf.Min(shift.Index, hotkeyIdx);
+
+			var alt = removeAltRegex_.Match(menuPath);
+			if (alt.Success)
+				hotkeyIdx = Mathf.Min(alt.Index, hotkeyIdx);
+
+			var underscore = removeUnderscoreIdx_.Match(menuPath);
+			if (underscore.Success)
+				hotkeyIdx = Mathf.Min(underscore.Index, hotkeyIdx);
+
+			var hotkeyExists = (hotkeyIdx < 5000);
+			if (hotkeyExists)
+				_path = _path.Substring(0, hotkeyIdx);
 
 			return _path;
 		}
