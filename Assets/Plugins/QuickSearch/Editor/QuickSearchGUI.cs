@@ -72,7 +72,7 @@ namespace QuickSearch {
 			lastRect_ = bgRect;
 
 			if (element.Icon != null) {
-				var iconRect = new Rect(bgRect.x + 4f, bgRect.y + 9f, 26f, 26f);
+				var iconRect = new Rect(bgRect.x + 5f, bgRect.y + 9f, 26f, 26f);
 				GUI.DrawTexture(iconRect, element.Icon, ScaleMode.ScaleToFit);
 			}
 
