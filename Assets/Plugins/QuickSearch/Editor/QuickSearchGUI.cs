@@ -73,7 +73,13 @@ namespace QuickSearch {
 										Action<ISearchableElement> onMouseDown,
 										Action<ISearchableElement> onDrag) {
 			var bgRect = new Rect(0f, lastRect_.yMax, WIDTH, ELEM_HEIGHT);
-			var bgStyle = guiSkin.GetStyle(selected ? "elem_bg_selected" : "elem_bg_normal");
+			var isHover = bgRect.Contains(Event.current.mousePosition);
+
+			var bgStyle = guiSkin.GetStyle("elem_bg_normal");
+			if (selected)
+				bgStyle = guiSkin.GetStyle("elem_bg_selected");
+			else if (isHover)
+				bgStyle = guiSkin.GetStyle("elem_bg_hover");
 
 			GUI.Box(bgRect, new GUIContent(), bgStyle);
 			lastRect_ = bgRect;
@@ -91,8 +97,9 @@ namespace QuickSearch {
 			var descStyle = guiSkin.GetStyle(selected ? "desc_selected" : "desc_normal");
 			GUI.Label(descRect, element.Description, descStyle);
 
-			var evt = Event.current;
-			if (bgRect.Contains(Event.current.mousePosition)) {
+			// Process mouse event
+			if (isHover) {
+				var evt = Event.current;
 				if (evt.type == EventType.MouseDown && onMouseDown != null) {
 					onMouseDown(element);
 					evt.Use();

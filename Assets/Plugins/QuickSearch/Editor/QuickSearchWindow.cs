@@ -90,9 +90,15 @@ namespace QuickSearch {
 		}
 
 		private void OnGUI () {
+			wantsMouseMove = true;
+
 			ProcessKeyboardEvents();
+			ProcessWheelEvents();
 			DrawGUI();
 			ProcessTryFocusQueryField();
+
+			if (Event.current.type == EventType.MouseMove)
+				Repaint();
 		}
 
 		private void DrawGUI () {
@@ -162,6 +168,19 @@ namespace QuickSearch {
 			// End of drag
 			isDragging_ = false;
 			Focus();
+		}
+
+		private void ProcessWheelEvents () {
+			var evt = Event.current;
+			if (evt.type != EventType.ScrollWheel)
+				return;
+
+			var delta = evt.delta;
+			if (delta.y > 0)
+				SetSelectedIndex(SelectedIndex + 1);
+			else
+				SetSelectedIndex(SelectedIndex - 1);
+			evt.Use();
 		}
 
 		private void ProcessKeyboardEvents () {
