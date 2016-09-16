@@ -56,6 +56,8 @@ namespace QuickSearch {
 			cachedElements_.Clear();
 			cachedMatchPairs_.Clear();
 
+			var query_lower = query.ToLowerInvariant().Replace(" ", "");
+
 			for (var i = 0; i < indexers_.Count; ++i) {
 				var indexer = indexers_[i];
 				indexer.NotifyOnQuery(query);
@@ -64,7 +66,7 @@ namespace QuickSearch {
 				if (indexerElements == null)
 					continue;
 
-				CalculateMatchScore(indexerElements, query, cachedMatchPairs_);
+				CalculateMatchScore(indexerElements, query_lower, cachedMatchPairs_);
 			}
 			cachedMatchPairs_.Sort((a, b) => b.score.CompareTo(a.score));
 
@@ -74,13 +76,13 @@ namespace QuickSearch {
 			return cachedElements_;
 		}
 
-		private void CalculateMatchScore (List<ISearchableElement> elements, string query, List<MatchPair> outToAppend) {
+		private void CalculateMatchScore (List<ISearchableElement> elements, string query_lower, List<MatchPair> outToAppend) {
 			for (var i = 0; i < elements.Count; ++i) {
 				var element = elements[i];
-				var score = CalculateMatchScore(element.PrimaryContents, query);
+				var score = CalculateMatchScore(element.PrimaryContents.ToLowerInvariant(), query_lower);
 
 				if (element.SecondaryContents != null) {
-					var secondaryScore = CalculateMatchScore(element.SecondaryContents, query) * 0.9f;
+					var secondaryScore = CalculateMatchScore(element.SecondaryContents.ToLowerInvariant(), query_lower) * 0.9f;
 					score = Mathf.Max(score, secondaryScore);
 				}
 
@@ -91,33 +93,24 @@ namespace QuickSearch {
 			}
 		}
 
-		private float CalculateMatchScore (string contents, string query) {
-			if (query.Length <= 0 || contents.Length <= 0)
+		private float CalculateMatchScore (string contents_lower, string query_lower) {
+			if (query_lower.Length <= 0 || contents_lower.Length <= 0)
 				return 0;
 
 			var sum = 0f;
 			var score = 5f;
 			var cursor = 0;
 
-			for (var i = 0; i < contents.Length; ++i) {
+			for (var i = 0; i < contents_lower.Length; ++i) {
 				// if there is no more another query character
-				if (cursor >= query.Length) {
+				if (cursor >= query_lower.Length) {
 					// disadvantage on early break
 					sum *= 0.95f;
 					break;
 				}
 
-				var contentsChr = char.ToLowerInvariant(contents[i]);
-				var queryChr = char.ToLowerInvariant(query[cursor]);
-
-				if (queryChr == ' ') {
-					cursor += 1;
-					continue;
-				}
-
-				if (contentsChr == ' ')
-					continue;
-
+				var contentsChr = contents_lower[i];
+				var queryChr = query_lower[cursor];
 				if (contentsChr == queryChr) {
 					score *= 2f;
 					sum += score;
@@ -129,9 +122,28 @@ namespace QuickSearch {
 				}
 			}
 			// if query has rest characters
-			if (cursor < query.Length)
-				return 0f;
+			if (sum <= 0f || cursor < query_lower.Length)
+				return CalculateMatchScoreFallback(contents_lower, query_lower);
 			return sum;
+		}
+
+		private readonly List<char> fallbackChars_ = new List<char>(20);
+
+		private float CalculateMatchScoreFallback (string contents_lower, string query_lower) {
+			fallbackChars_.Clear();
+			fallbackChars_.AddRange(contents_lower.ToCharArray());
+
+			var matchCount = 0;
+			for (var i = 0; i < query_lower.Length; ++i) {
+				var chr = query_lower[i];
+				var idx = fallbackChars_.IndexOf(chr);
+				if (idx < 0)
+					continue;
+
+				fallbackChars_[idx] = (char)0;
+				matchCount++;
+			}
+			return Mathf.Min(2f, matchCount * 0.1f);
 		}
 	}
 }
