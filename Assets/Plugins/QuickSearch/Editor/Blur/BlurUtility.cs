@@ -8,7 +8,7 @@ namespace QuickSearch {
 
 	public sealed class BlurOptions {
 		public Color tint = Color.white;
-		public float tinting = 0.65f;
+		public float tinting = 0.72f;
 		public float blurSize = 4f;
 		public int passes = 8;
 	}
