@@ -44,7 +44,7 @@ namespace QuickSearch {
 			GUI.Label(titleRect, "QuickSearch", titleStyle);
 
 			var rightStyle = guiSkin.GetStyle("head_right");
-			GUI.Label(titleRect, "<color=#333>tab</color> to peek, <color=#333>enter</color> to select", rightStyle);
+			GUI.Label(titleRect, "<color=#333>alt+arrow</color> to move window, <color=#333>tab</color> to peek, <color=#333>enter</color> to select", rightStyle);
 
 			lastRect_ = titleRect;
 		}

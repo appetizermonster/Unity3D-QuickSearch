@@ -22,8 +22,8 @@ namespace QuickSearch {
 			var windowSize = QuickSearchWindow.WINDOW_SIZE;
 			var windowRect = EditorWindowUtility.GetCenterRect(windowSize);
 
-			window_.PrepareBlurBackground(windowRect);
 			window_.position = windowRect;
+			window_.RefreshBlurBackground();
 			window_.ShowPopup();
 
 			window_.Focus();

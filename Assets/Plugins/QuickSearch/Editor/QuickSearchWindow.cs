@@ -10,6 +10,8 @@ namespace QuickSearch {
 		public static QuickSearchWindow Active { get; private set; }
 
 		private const int VISIBLE_RESULTS = 7;
+		private const float WINDOW_MOVE_DELTA = 20f;
+
 		public static readonly Vector2 WINDOW_SIZE = new Vector2(700, (VISIBLE_RESULTS + 1) * QuickSearchGUI.ELEM_HEIGHT + QuickSearchGUI.HEAD_HEIGHT);
 
 		public event Action<string> OnQueryChanged = null;
@@ -53,15 +55,18 @@ namespace QuickSearch {
 			if (Active == this)
 				Active = null;
 
+			DestroyBackgroundTexture();
+
 			if (!dontRestoreSelection_)
 				Selection.objects = oldSelections_;
-			if (backgroundTexture_ != null)
-				Texture.DestroyImmediate(backgroundTexture_);
 
 			ScriptableObject.DestroyImmediate(gui_);
 		}
 
-		public void PrepareBlurBackground (Rect windowRect) {
+		public void RefreshBlurBackground () {
+			DestroyBackgroundTexture();
+
+			var windowRect = this.position;
 			var position = windowRect.position;
 			var width = (int)windowRect.width;
 			var height = (int)windowRect.height;
@@ -80,6 +85,12 @@ namespace QuickSearch {
 
 			Texture2D.DestroyImmediate(baseTex);
 			backgroundTexture_ = blurTexture;
+		}
+
+		private void DestroyBackgroundTexture () {
+			if (backgroundTexture_ != null)
+				Texture.DestroyImmediate(backgroundTexture_);
+			backgroundTexture_ = null;
 		}
 
 		private void Update () {
@@ -198,22 +209,30 @@ namespace QuickSearch {
 			if (evt.type != EventType.KeyDown)
 				return;
 
-			if (keyCode == KeyCode.DownArrow) {
+			var consumeEvent = true;
+			if (evt.alt && keyCode == KeyCode.LeftArrow)
+				MoveWindow(new Vector2(-WINDOW_MOVE_DELTA, 0));
+			else if (evt.alt && keyCode == KeyCode.RightArrow)
+				MoveWindow(new Vector2(WINDOW_MOVE_DELTA, 0));
+			else if (evt.alt && keyCode == KeyCode.UpArrow)
+				MoveWindow(new Vector2(0, -WINDOW_MOVE_DELTA));
+			else if (evt.alt && keyCode == KeyCode.DownArrow)
+				MoveWindow(new Vector2(0, WINDOW_MOVE_DELTA));
+			else if (keyCode == KeyCode.DownArrow)
 				SetSelectedIndex(SelectedIndex + 1);
-				evt.Use();
-			} else if (keyCode == KeyCode.UpArrow) {
+			else if (keyCode == KeyCode.UpArrow)
 				SetSelectedIndex(SelectedIndex - 1);
-				evt.Use();
-			} else if (keyCode == KeyCode.Tab) {
+			else if (keyCode == KeyCode.Tab)
 				EmitSelect();
-				evt.Use();
-			} else if (keyCode == KeyCode.Return) {
+			else if (keyCode == KeyCode.Return)
 				EmitExecute();
-				evt.Use();
-			} else if (keyCode == KeyCode.Escape) {
+			else if (keyCode == KeyCode.Escape)
 				Escape();
+			else
+				consumeEvent = false;
+
+			if (consumeEvent)
 				evt.Use();
-			}
 		}
 
 		private void ProcessTryFocusQueryField () {
@@ -233,6 +252,17 @@ namespace QuickSearch {
 				textEditor.SelectAll();
 			}
 			trySelectAllQueryField_ = false;
+		}
+
+		public void MoveWindow (Vector2 delta) {
+			var rect = position;
+			var pos = rect.position;
+			pos += delta;
+
+			rect.position = pos;
+			position = rect;
+
+			DestroyBackgroundTexture();
 		}
 
 		public void Escape () {
