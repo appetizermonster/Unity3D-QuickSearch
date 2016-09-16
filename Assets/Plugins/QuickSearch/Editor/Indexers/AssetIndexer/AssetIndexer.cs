@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using System.Threading;
 
 namespace QuickSearch {
 
@@ -28,23 +29,35 @@ namespace QuickSearch {
 		}
 
 		public void ReindexElements () {
-			var assetPaths = AssetDatabase.GetAllAssetPaths();
-			elements_.Clear();
+			var thread = new Thread(CollectAssets);
+			thread.Start(AssetDatabase.GetAllAssetPaths());
+		}
 
-			for (var i = 0; i < assetPaths.Length; ++i) {
-				var assetPath = assetPaths[i];
+		public void CollectAssets (object arg) {
+			var assetPaths = (string[])arg;
+			lock (elements_) {
+				var watch = System.Diagnostics.Stopwatch.StartNew();
+				elements_.Clear();
 
-				// Ignore non-project assets
-				if (assetPath.StartsWith("Assets/") == false)
-					continue;
+				for (var i = 0; i < assetPaths.Length; ++i) {
+					var assetPath = assetPaths[i];
 
-				var assetElement = new AssetSearchableElement(assetPath);
-				elements_.Add(assetElement);
+					// Ignore non-project assets
+					if (assetPath.StartsWith("Assets/") == false)
+						continue;
+
+					var assetElement = new AssetSearchableElement(assetPath);
+					elements_.Add(assetElement);
+				}
+				watch.Stop();
+				Debug.LogFormat("indexing complete: {0}ms", watch.ElapsedMilliseconds);
 			}
 		}
 
 		List<ISearchableElement> ISearchIndexer.GetElements () {
-			return elements_;
+			lock (elements_) {
+				return elements_;
+			}
 		}
 	}
 }
