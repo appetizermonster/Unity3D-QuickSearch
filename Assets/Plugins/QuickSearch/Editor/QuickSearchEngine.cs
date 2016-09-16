@@ -27,7 +27,7 @@ namespace QuickSearch {
 			instance_.Initialize();
 		}
 
-		private readonly List<ISearchIndexer> indexers_ = new List<ISearchIndexer>();
+		private readonly List<SearchIndexerBase> indexers_ = new List<SearchIndexerBase>();
 
 		private void Initialize () {
 			indexers_.Add(new AssetIndexer());
@@ -39,13 +39,13 @@ namespace QuickSearch {
 
 		private void EmitStartup () {
 			for (var i = 0; i < indexers_.Count; ++i) {
-				indexers_[i].OnStartup();
+				indexers_[i].NotifyOnStartup();
 			}
 		}
 
 		public void EmitOpen () {
 			for (var i = 0; i < indexers_.Count; ++i) {
-				indexers_[i].OnOpen();
+				indexers_[i].NotifyOnOpen();
 			}
 		}
 
@@ -58,9 +58,12 @@ namespace QuickSearch {
 
 			for (var i = 0; i < indexers_.Count; ++i) {
 				var indexer = indexers_[i];
-				indexer.OnQuery(query);
+				indexer.NotifyOnQuery(query);
 
-				var indexerElements = indexer.GetElements();
+				var indexerElements = indexer.RequestElements();
+				if (indexerElements == null)
+					continue;
+
 				CalculateMatchScore(indexerElements, query, cachedMatchPairs_);
 			}
 			cachedMatchPairs_.Sort((a, b) => b.score.CompareTo(a.score));

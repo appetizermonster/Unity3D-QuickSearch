@@ -61,7 +61,7 @@ namespace QuickSearch {
 			ScriptableObject.DestroyImmediate(gui_);
 		}
 
-		public void PrepareBackgroundTexture (Rect windowRect) {
+		public void PrepareBlurBackground (Rect windowRect) {
 			var position = windowRect.position;
 			var width = (int)windowRect.width;
 			var height = (int)windowRect.height;

@@ -1,31 +1,29 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEditor;
 using UnityEngine;
-using System.Threading;
 
 namespace QuickSearch {
 
-	public sealed class AssetIndexer : AssetPostprocessor, ISearchIndexer {
-		private static AssetIndexer activeIndexer_ = null;
+	public sealed class AssetIndexerHook : AssetPostprocessor {
 
 		private static void OnPostprocessAllAssets (string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {
-			if (activeIndexer_ != null)
-				activeIndexer_.ReindexElements();
+			if (AssetIndexer.Active != null)
+				AssetIndexer.Active.ReindexElements();
 		}
+	}
 
+	public sealed class AssetIndexer : SearchIndexerBase {
+		public static AssetIndexer Active { get; private set; }
+
+		private static readonly Pool<AssetSearchableElement> elementPool_ = new Pool<AssetSearchableElement>(() => new AssetSearchableElement(), 500);
 		private readonly List<ISearchableElement> elements_ = new List<ISearchableElement>(200);
 
-		void ISearchIndexer.OnStartup () {
+		protected override void OnStartup () {
 			ReindexElements();
-			activeIndexer_ = this;
-		}
-
-		void ISearchIndexer.OnOpen () {
-		}
-
-		void ISearchIndexer.OnQuery (string query) {
+			Active = this;
 		}
 
 		public void ReindexElements () {
@@ -36,7 +34,10 @@ namespace QuickSearch {
 		public void CollectAssets (object arg) {
 			var assetPaths = (string[])arg;
 			lock (elements_) {
-				var watch = System.Diagnostics.Stopwatch.StartNew();
+				for (var i = 0; i < elements_.Count; ++i) {
+					var element = elements_[i];
+					elementPool_.Dealloc((AssetSearchableElement)element);
+				}
 				elements_.Clear();
 
 				for (var i = 0; i < assetPaths.Length; ++i) {
@@ -46,18 +47,21 @@ namespace QuickSearch {
 					if (assetPath.StartsWith("Assets/") == false)
 						continue;
 
-					var assetElement = new AssetSearchableElement(assetPath);
+					var assetElement = elementPool_.Alloc();
+					assetElement.Setup(assetPath);
 					elements_.Add(assetElement);
 				}
-				watch.Stop();
-				Debug.LogFormat("indexing complete: {0}ms", watch.ElapsedMilliseconds);
 			}
 		}
 
-		List<ISearchableElement> ISearchIndexer.GetElements () {
+		protected override List<ISearchableElement> GetElements () {
 			lock (elements_) {
 				return elements_;
 			}
+		}
+
+		protected override bool IsActive () {
+			return true;
 		}
 	}
 }

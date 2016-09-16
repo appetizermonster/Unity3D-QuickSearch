@@ -6,16 +6,16 @@ using UnityEngine;
 namespace QuickSearch {
 
 	public sealed class AssetSearchableElement : ISearchableElement {
-		private readonly float priority_ = 1f;
+		private float priority_ = 1f;
 
-		private readonly bool isFolder_ = false;
-		private readonly bool isTexture_ = false;
+		private bool isFolder_ = false;
+		private bool isTexture_ = false;
 
-		private readonly string assetPath_ = null;
-		private readonly string assetFilename_ = null;
-		private readonly string assetExt_ = null;
+		private string assetPath_ = null;
+		private string assetFilename_ = null;
+		private string assetExt_ = null;
 
-		public AssetSearchableElement (string assetPath) {
+		public void Setup (string assetPath) {
 			assetPath_ = assetPath;
 			assetFilename_ = Path.GetFileName(assetPath);
 			assetExt_ = Path.GetExtension(assetPath).ToLowerInvariant();

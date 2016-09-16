@@ -22,9 +22,9 @@ namespace QuickSearch {
 			var windowSize = QuickSearchWindow.WINDOW_SIZE;
 			var windowRect = EditorWindowUtility.GetCenterRect(windowSize);
 
-			window_.PrepareBackgroundTexture(windowRect);
-			window_.ShowPopup();
+			window_.PrepareBlurBackground(windowRect);
 			window_.position = windowRect;
+			window_.ShowPopup();
 
 			window_.Focus();
 			window_.FocusOnQueryField();

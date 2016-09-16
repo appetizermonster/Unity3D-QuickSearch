@@ -6,13 +6,10 @@ using UnityEngine;
 
 namespace QuickSearch {
 
-	public sealed class SceneIndexer : ISearchIndexer {
+	public sealed class SceneIndexer : SearchIndexerBase {
 		private readonly List<ISearchableElement> elements_ = new List<ISearchableElement>(100);
 
-		void ISearchIndexer.OnStartup () {
-		}
-
-		void ISearchIndexer.OnOpen () {
+		protected override void OnOpen () {
 			elements_.Clear();
 
 			var allGameObjects = GameObject.FindObjectsOfType<GameObject>();
@@ -22,10 +19,7 @@ namespace QuickSearch {
 			}
 		}
 
-		void ISearchIndexer.OnQuery (string query) {
-		}
-
-		List<ISearchableElement> ISearchIndexer.GetElements () {
+		protected override List<ISearchableElement> GetElements () {
 			return elements_;
 		}
 	}

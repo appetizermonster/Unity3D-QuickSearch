@@ -3,32 +3,34 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Threading;
 using UnityEditor;
 using UnityEngine;
 
 namespace QuickSearch {
 
-	public sealed class MenuIndexer : ISearchIndexer {
+	public sealed class MenuIndexer : SearchIndexerBase {
 		private readonly List<ISearchableElement> elements_ = new List<ISearchableElement>(100);
 
-		void ISearchIndexer.OnStartup () {
-			IndexMenus();
+		protected override void OnStartup () {
+			IndexAll();
 		}
 
-		void ISearchIndexer.OnOpen () {
+		private void IndexAll () {
+			var thread = new Thread(_IndexAll);
+			thread.Start();
 		}
 
-		void ISearchIndexer.OnQuery (string query) {
+		private void _IndexAll () {
+			lock (elements_) {
+				elements_.Clear();
+
+				IndexMenuItemAttribs();
+				IndexHiddenMenus();
+			}
 		}
 
-		private void IndexMenus () {
-			elements_.Clear();
-
-			IndexMenuItems();
-			IndexHiddenMenus();
-		}
-
-		private void IndexMenuItems () {
+		private void IndexMenuItemAttribs () {
 			var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			for (var i = 0; i < assemblies.Length; ++i) {
 				var assembly = assemblies[i];
@@ -92,6 +94,7 @@ namespace QuickSearch {
 		}
 
 #if UNITY_EDITOR_WIN
+
 		[DllImport("user32.dll")]
 		private static extern IntPtr GetActiveWindow ();
 
@@ -108,10 +111,13 @@ namespace QuickSearch {
 			var activeWindow = GetActiveWindow();
 			SendMessage(activeWindow, WM_COMMAND, command, 0);
 		}
+
 #endif
 
-		List<ISearchableElement> ISearchIndexer.GetElements () {
-			return elements_;
+		protected override List<ISearchableElement> GetElements () {
+			lock (elements_) {
+				return elements_;
+			}
 		}
 	}
 }
