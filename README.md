@@ -23,7 +23,7 @@ unity-packman install appetizermonster/Unity3D-QuickSearch
 ```
 
 #### - or Asset Package
-Download [latest package](https://github.com/appetizermonster/Unity3D-RecompileDisabler/raw/master/packages/latest.unitypackage)
+Download [latest package](https://github.com/appetizermonster/Unity3D-QuickSearch/raw/master/packages/latest.unitypackage)
 
 ## Usage
 Press <kbd>Ctrl</kbd> + <kbd>,</kbd> on Unity Editor.
