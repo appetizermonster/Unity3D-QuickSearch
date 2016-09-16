@@ -18,13 +18,13 @@ namespace QuickSearch {
 
 		string ISearchableElement.PrimaryContents {
 			get {
-				return "Scene: " + name_;
+				return name_;
 			}
 		}
 
 		string ISearchableElement.SecondaryContents {
 			get {
-				return null;
+				return "Scene:" + name_;
 			}
 		}
 

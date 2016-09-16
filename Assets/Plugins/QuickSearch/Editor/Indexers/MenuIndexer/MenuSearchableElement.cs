@@ -66,13 +66,13 @@ namespace QuickSearch {
 
 		string ISearchableElement.PrimaryContents {
 			get {
-				return contents_;
-			}
+				return menuPath_;
+            }
 		}
 
 		string ISearchableElement.SecondaryContents {
 			get {
-				return null;
+				return contents_;
 			}
 		}
 
