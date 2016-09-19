@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading;
 using UnityEditor;
 using UnityEngine;
@@ -106,7 +107,10 @@ namespace QuickSearch {
 				}
 
 				lock (lastResult_) {
-					var result = FindElements(query);
+					var parsedQuery = ParseQuery(query);
+					Debug.Log("parsed:" + parsedQuery);
+
+					var result = FindElements(parsedQuery);
 					lastResult_.Clear();
 					lastResult_.AddRange(result);
 				}
@@ -115,6 +119,19 @@ namespace QuickSearch {
 					notifyResultUpdate_ = true;
 				}
 			}
+		}
+
+		private readonly Regex endQueryRule_ = new Regex(@"^\.([^\s]+)", RegexOptions.IgnoreCase);
+
+		private string ParseQuery (string query) {
+			var match = endQueryRule_.Match(query);
+			if (!match.Success)
+				return query;
+
+			var newQuery = endQueryRule_.Replace(query, "");
+			newQuery += match.Groups[1].Value;
+
+			return newQuery;
 		}
 
 		private readonly List<ISearchableElement> tempResult_ = new List<ISearchableElement>();
