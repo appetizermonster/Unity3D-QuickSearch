@@ -14,6 +14,8 @@ namespace QuickSearch {
 
 		public static readonly Vector2 WINDOW_SIZE = new Vector2(700, (VISIBLE_RESULTS + 1) * QuickSearchGUI.ELEM_HEIGHT + QuickSearchGUI.HEAD_HEIGHT);
 
+		public event Action OnClose = null;
+
 		public event Action<string> OnQueryChanged = null;
 
 		public event Action<ISearchableElement> OnSelect = null;
@@ -61,6 +63,9 @@ namespace QuickSearch {
 				Selection.objects = oldSelections_;
 
 			ScriptableObject.DestroyImmediate(gui_);
+
+			if (OnClose != null)
+				OnClose();
 		}
 
 		public void RefreshBlurBackground () {

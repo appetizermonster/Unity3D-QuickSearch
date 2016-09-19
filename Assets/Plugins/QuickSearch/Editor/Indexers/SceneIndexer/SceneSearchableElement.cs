@@ -1,19 +1,37 @@
 ﻿using System.Collections;
+using System.Reflection;
+using System.Text;
 using UnityEditor;
 using UnityEngine;
-using System.Reflection;
 
 namespace QuickSearch {
 
 	public sealed class SceneSearchableElement : ISearchableElement {
 		private readonly GameObject gameObject_ = null;
 		private readonly string name_ = null;
+		private readonly string secondary_ = null;
 		private readonly string desc_ = null;
 
 		public SceneSearchableElement (GameObject gameObject) {
 			gameObject_ = gameObject;
 			name_ = gameObject.name;
-			desc_ = "Scene: " + name_ + (gameObject.activeInHierarchy ? " (active)" : " (inactive)");
+
+			var path = GetFullPath(gameObject.transform);
+			desc_ = "Scene: " + path + (gameObject.activeInHierarchy ? " (active)" : " (inactive)");
+			secondary_ = "Scene:" + path;
+		}
+
+		private static string GetFullPath (Transform tr) {
+			var sb = new StringBuilder();
+			var parent = tr.parent;
+
+			while (parent != null) {
+				sb.Insert(0, '/');
+				sb.Insert(0, parent.name);
+				parent = parent.parent;
+			}
+			sb.Append(tr.name);
+			return sb.ToString();
 		}
 
 		string ISearchableElement.PrimaryContents {
@@ -24,7 +42,7 @@ namespace QuickSearch {
 
 		string ISearchableElement.SecondaryContents {
 			get {
-				return "Scene:" + name_;
+				return secondary_;
 			}
 		}
 
@@ -80,6 +98,6 @@ namespace QuickSearch {
 				// Set Focus on Hierarchy Window
 				EditorApplication.ExecuteMenuItem("Window/Hierarchy");
 			}
-        }
+		}
 	}
 }

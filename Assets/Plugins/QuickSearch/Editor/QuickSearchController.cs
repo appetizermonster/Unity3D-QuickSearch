@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEditor;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace QuickSearch {
 
@@ -15,6 +16,8 @@ namespace QuickSearch {
 			}
 
 			window_ = EditorWindow.CreateInstance<QuickSearchWindow>();
+
+			window_.OnClose += OnClose;
 			window_.OnQueryChanged += OnQueryChanged;
 			window_.OnSelect += OnSelect;
 			window_.OnExecute += OnExecute;
@@ -29,16 +32,29 @@ namespace QuickSearch {
 			window_.Focus();
 			window_.FocusOnQueryField();
 
-			QuickSearchEngine.Instance.EmitOpen();
+			QuickSearchEngine.Instance.NotifyOpen();
+			QuickSearchEngine.Instance.OnResultUpdate += Worker_OnResultUpdate;
+		}
+
+		private static void OnClose () {
+			QuickSearchEngine.Instance.OnResultUpdate -= Worker_OnResultUpdate;
 		}
 
 		private static void OnQueryChanged (string query) {
-			var engine = QuickSearchEngine.Instance;
-			var searchedElements = engine.FindElements(query);
+			QuickSearchEngine.Instance.RequestFindElements(query);
+		}
+
+		private static List<ISearchableElement> fetchedResult_ = new List<ISearchableElement>();
+		private static void Worker_OnResultUpdate () {
+			if (window_ == null)
+				return;
+
+			QuickSearchEngine.Instance.GetLastResult(fetchedResult_);
 
 			window_.List.Clear();
-			window_.List.AddRange(searchedElements);
+			window_.List.AddRange(fetchedResult_);
 			window_.SetSelectedIndex(0);
+			window_.Repaint();
 		}
 
 		private static void OnSelect (ISearchableElement element) {

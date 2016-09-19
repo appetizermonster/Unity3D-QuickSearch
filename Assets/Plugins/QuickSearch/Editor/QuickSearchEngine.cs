@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEditor;
 using UnityEngine;
 
@@ -17,44 +19,112 @@ namespace QuickSearch {
 
 	[InitializeOnLoad]
 	public class QuickSearchEngine {
-		private const int MAX_RESULT = 20;
-
 		private static QuickSearchEngine instance_ = null;
 		public static QuickSearchEngine Instance { get { return instance_; } }
 
 		static QuickSearchEngine () {
 			instance_ = new QuickSearchEngine();
-			instance_.Initialize();
+			instance_.Start();
 		}
 
-		private readonly List<SearchIndexerBase> indexers_ = new List<SearchIndexerBase>();
+		private const int MAX_RESULT = 20;
 
-		private void Initialize () {
+		private readonly List<SearchIndexerBase> indexers_ = new List<SearchIndexerBase>();
+		private Thread thread_ = null;
+
+		public event Action OnResultUpdate = null;
+
+		public void Start () {
 			indexers_.Add(new AssetIndexer());
 			indexers_.Add(new SceneIndexer());
 			indexers_.Add(new MenuIndexer());
 
-			EmitStartup();
+			NotifyStartup();
+
+			thread_ = new Thread(Thread_Worker);
+			thread_.Start();
+
+			EditorApplication.update += Editor_OnUpdate;
 		}
 
-		private void EmitStartup () {
+		private readonly List<ISearchableElement> lastResult_ = new List<ISearchableElement>();
+
+		public void GetLastResult (List<ISearchableElement> outResult) {
+			lock (lastResult_) {
+				outResult.Clear();
+				outResult.AddRange(lastResult_);
+			}
+		}
+
+		private readonly object notifyLock_ = new object();
+		private bool notifyResultUpdate_ = false;
+
+		private void Editor_OnUpdate () {
+			lock (notifyLock_) {
+				if (!notifyResultUpdate_)
+					return;
+
+				if (OnResultUpdate != null)
+					OnResultUpdate();
+
+				notifyResultUpdate_ = false;
+			}
+		}
+
+		private void NotifyStartup () {
 			for (var i = 0; i < indexers_.Count; ++i) {
 				indexers_[i].NotifyOnStartup();
 			}
 		}
 
-		public void EmitOpen () {
+		public void NotifyOpen () {
 			for (var i = 0; i < indexers_.Count; ++i) {
 				indexers_[i].NotifyOnOpen();
 			}
 		}
 
-		private readonly List<ISearchableElement> cachedElements_ = new List<ISearchableElement>();
-		private readonly List<MatchPair> cachedMatchPairs_ = new List<MatchPair>();
+		public void RequestFindElements (string query) {
+			lock (queryLock_) {
+				requestedQuery_ = query;
+			}
+		}
 
-		public List<ISearchableElement> FindElements (string query) {
-			cachedElements_.Clear();
-			cachedMatchPairs_.Clear();
+		private readonly object queryLock_ = new object();
+
+		private string requestedQuery_ = null;
+
+		private void Thread_Worker () {
+			while (true) {
+				Thread.Sleep(20);
+
+				var query = (string)null;
+				lock (queryLock_) {
+					if (requestedQuery_ == null)
+						continue;
+					query = requestedQuery_;
+					requestedQuery_ = null;
+				}
+
+				lock (lastResult_) {
+					var result = FindElements(query);
+					lastResult_.Clear();
+					lastResult_.AddRange(result);
+				}
+
+				lock (notifyLock_) {
+					notifyResultUpdate_ = true;
+				}
+			}
+		}
+
+		private readonly List<ISearchableElement> tempResult_ = new List<ISearchableElement>();
+		private readonly List<ISearchableElement> tempElements_ = new List<ISearchableElement>();
+
+		private readonly List<MatchPair> tempMatchPairs_ = new List<MatchPair>();
+
+		private List<ISearchableElement> FindElements (string query) {
+			tempResult_.Clear();
+			tempMatchPairs_.Clear();
 
 			var query_lower = query.ToLowerInvariant().Replace(" ", "");
 
@@ -62,18 +132,20 @@ namespace QuickSearch {
 				var indexer = indexers_[i];
 				indexer.NotifyOnQuery(query);
 
-				var indexerElements = indexer.RequestElements();
-				if (indexerElements == null)
+				tempElements_.Clear();
+				indexer.RequestElements(tempElements_);
+				if (tempElements_.Count <= 0)
 					continue;
 
-				CalculateMatchScore(indexerElements, query_lower, cachedMatchPairs_);
+				CalculateMatchScore(tempElements_, query_lower, tempMatchPairs_);
 			}
-			cachedMatchPairs_.Sort((a, b) => b.score.CompareTo(a.score));
+			tempMatchPairs_.Sort((a, b) => b.score.CompareTo(a.score));
 
-			var resultCount = Mathf.Min(cachedMatchPairs_.Count, MAX_RESULT);
+			var resultCount = Mathf.Min(tempMatchPairs_.Count, MAX_RESULT);
 			for (var i = 0; i < resultCount; ++i)
-				cachedElements_.Add(cachedMatchPairs_[i].element);
-			return cachedElements_;
+				tempResult_.Add(tempMatchPairs_[i].element);
+
+			return tempResult_;
 		}
 
 		private void CalculateMatchScore (List<ISearchableElement> elements, string query_lower, List<MatchPair> outToAppend) {
@@ -122,28 +194,9 @@ namespace QuickSearch {
 				}
 			}
 			// if query has rest characters
-			if (sum <= 0f || cursor < query_lower.Length)
-				return CalculateMatchScoreFallback(contents_lower, query_lower);
+			if (cursor < query_lower.Length)
+				return sum * 0.25f;
 			return sum;
-		}
-
-		private readonly List<char> fallbackChars_ = new List<char>(20);
-
-		private float CalculateMatchScoreFallback (string contents_lower, string query_lower) {
-			fallbackChars_.Clear();
-			fallbackChars_.AddRange(contents_lower.ToCharArray());
-
-			var matchCount = 0;
-			for (var i = 0; i < query_lower.Length; ++i) {
-				var chr = query_lower[i];
-				var idx = fallbackChars_.IndexOf(chr);
-				if (idx < 0)
-					continue;
-
-				fallbackChars_[idx] = (char)0;
-				matchCount++;
-			}
-			return Mathf.Min(2f, matchCount * 0.1f);
 		}
 	}
 }

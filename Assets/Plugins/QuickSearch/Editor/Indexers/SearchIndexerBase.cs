@@ -18,10 +18,16 @@ namespace QuickSearch {
 			OnQuery(query);
 		}
 
-		public List<ISearchableElement> RequestElements () {
-			if (IsActive())
-				return GetElements();
-			return null;
+		public void RequestElements (List<ISearchableElement> outResult) {
+			outResult.Clear();
+
+			if (!IsActive())
+				return;
+
+			var elements = GetElements();
+			lock (elements) {
+				outResult.AddRange(elements);
+			}
 		}
 
 		protected virtual void OnStartup () {
