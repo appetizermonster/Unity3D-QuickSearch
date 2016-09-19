@@ -108,9 +108,8 @@ namespace QuickSearch {
 
 				lock (lastResult_) {
 					var parsedQuery = ParseQuery(query);
-					Debug.Log("parsed:" + parsedQuery);
-
 					var result = FindElements(parsedQuery);
+
 					lastResult_.Clear();
 					lastResult_.AddRange(result);
 				}
