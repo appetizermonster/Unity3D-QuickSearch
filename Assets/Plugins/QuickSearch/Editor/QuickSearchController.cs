@@ -1,14 +1,19 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace QuickSearch {
 
 	public static class QuickSearchController {
 		private static QuickSearchWindow window_ = null;
 
+#if UNITY_EDITOR_OSX
+		[MenuItem("Window/Toggle QuickSearch #`")]
+#else
+
 		[MenuItem("Window/Toggle QuickSearch %,")]
+#endif
 		private static void ToggleQuickSearch () {
 			if (QuickSearchWindow.Active != null) {
 				QuickSearchWindow.Active.Close();
@@ -45,6 +50,7 @@ namespace QuickSearch {
 		}
 
 		private static List<ISearchableElement> fetchedResult_ = new List<ISearchableElement>();
+
 		private static void Worker_OnResultUpdate () {
 			if (window_ == null)
 				return;
