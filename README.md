@@ -26,7 +26,7 @@ unity-packman install appetizermonster/Unity3D-QuickSearch
 Download [latest package](https://github.com/appetizermonster/Unity3D-QuickSearch/raw/master/packages/latest.unitypackage)
 
 ## Usage
-Press <kbd>Ctrl</kbd> + <kbd>,</kbd> on Unity Editor.
+Press <kbd>Ctrl</kbd> + <kbd>,</kbd> on Windows, <kbd>Shift</kbd> + <kbd>`</kbd> on macOS
 
 ## Credits
 - Blur Background  
