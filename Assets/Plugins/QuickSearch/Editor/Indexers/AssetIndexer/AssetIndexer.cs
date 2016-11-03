@@ -32,25 +32,28 @@ namespace QuickSearch {
 		}
 
 		public void CollectAssets (object arg) {
-			var assetPaths = (string[])arg;
-			lock (elements_) {
-				for (var i = 0; i < elements_.Count; ++i) {
-					var element = elements_[i];
-					elementPool_.Dealloc((AssetSearchableElement)element);
+			try {
+				var assetPaths = (string[])arg;
+				lock (elements_) {
+					for (var i = 0; i < elements_.Count; ++i) {
+						var element = elements_[i];
+						elementPool_.Dealloc((AssetSearchableElement)element);
+					}
+					elements_.Clear();
+
+					for (var i = 0; i < assetPaths.Length; ++i) {
+						var assetPath = assetPaths[i];
+
+						// Ignore non-project assets
+						if (assetPath.StartsWith("Assets/") == false)
+							continue;
+
+						var assetElement = elementPool_.Alloc();
+						assetElement.Setup(assetPath);
+						elements_.Add(assetElement);
+					}
 				}
-				elements_.Clear();
-
-				for (var i = 0; i < assetPaths.Length; ++i) {
-					var assetPath = assetPaths[i];
-
-					// Ignore non-project assets
-					if (assetPath.StartsWith("Assets/") == false)
-						continue;
-
-					var assetElement = elementPool_.Alloc();
-					assetElement.Setup(assetPath);
-					elements_.Add(assetElement);
-				}
+			} catch (System.Exception) {
 			}
 		}
 

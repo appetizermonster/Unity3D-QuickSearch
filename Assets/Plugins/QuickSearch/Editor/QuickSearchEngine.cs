@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Threading;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,7 +30,7 @@ namespace QuickSearch {
 		private const int MAX_RESULT = 20;
 
 		private readonly List<SearchIndexerBase> indexers_ = new List<SearchIndexerBase>();
-		private Thread thread_ = null;
+		private EditorThreadLoop worker_ = null;
 
 		public event Action OnResultUpdate = null;
 
@@ -42,8 +41,8 @@ namespace QuickSearch {
 
 			NotifyStartup();
 
-			thread_ = new Thread(Thread_Worker);
-			thread_.Start();
+			worker_ = new EditorThreadLoop(Worker_Loop, 20);
+			worker_.Start();
 
 			EditorApplication.update += Editor_OnUpdate;
 		}
@@ -94,29 +93,25 @@ namespace QuickSearch {
 
 		private string requestedQuery_ = null;
 
-		private void Thread_Worker () {
-			while (true) {
-				Thread.Sleep(20);
+		private void Worker_Loop () {
+			var query = (string)null;
+			lock (queryLock_) {
+				if (requestedQuery_ == null)
+					return;
+				query = requestedQuery_;
+				requestedQuery_ = null;
+			}
 
-				var query = (string)null;
-				lock (queryLock_) {
-					if (requestedQuery_ == null)
-						continue;
-					query = requestedQuery_;
-					requestedQuery_ = null;
-				}
+			lock (lastResult_) {
+				var parsedQuery = ParseQuery(query);
+				var result = FindElements(parsedQuery);
 
-				lock (lastResult_) {
-					var parsedQuery = ParseQuery(query);
-					var result = FindElements(parsedQuery);
+				lastResult_.Clear();
+				lastResult_.AddRange(result);
+			}
 
-					lastResult_.Clear();
-					lastResult_.AddRange(result);
-				}
-
-				lock (notifyLock_) {
-					notifyResultUpdate_ = true;
-				}
+			lock (notifyLock_) {
+				notifyResultUpdate_ = true;
 			}
 		}
 
