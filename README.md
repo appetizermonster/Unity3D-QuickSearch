@@ -16,17 +16,10 @@ A Command Palette for Unity, built with :heart:
 Unity >= 5.2.2
 
 ## Installation
-#### - with [unity-packman](https://github.com/appetizermonster/unity-packman)
-
-```bash
-unity-packman install appetizermonster/Unity3D-QuickSearch
-```
-
-#### - or Asset Package
-Download [latest package](https://github.com/appetizermonster/Unity3D-QuickSearch/raw/master/packages/latest.unitypackage)
+Download [Package Releases](https://github.com/JohannesDeml/Unity3D-QuickSearch/releases)
 
 ## Usage
-Press <kbd>Ctrl</kbd> + <kbd>,</kbd> on Windows, <kbd>Shift</kbd> + <kbd>`</kbd> on macOS
+Press <kbd>Ctrl</kbd> + <kbd>t</kbd> to open the window or go to Assets/QuickSearch.
 
 ## Credits
 - Blur Background  
