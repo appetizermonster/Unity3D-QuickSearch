@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace QuickSearch {
 
@@ -31,15 +32,13 @@ namespace QuickSearch {
 		}
 
 		private static List<GameObject> GetSceneRoots () {
-			var prop = new HierarchyProperty(HierarchyType.GameObjects);
-			var expanded = new int[0];
+			
 			var roots = new List<GameObject>();
-
-			while (prop.Next(expanded)) {
-				var go = prop.pptrValue as GameObject;
-				if (go == null)
-					continue;
-				roots.Add(go);
+			var sceneCount = SceneManager.sceneCount;
+			for (int i = 0; i < sceneCount; i++)
+			{
+				var scene = SceneManager.GetSceneAt(i);
+				roots.AddRange(scene.GetRootGameObjects());
 			}
 
 			return roots;
