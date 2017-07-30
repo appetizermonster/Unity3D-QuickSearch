@@ -9,10 +9,9 @@ namespace QuickSearch {
 		private static QuickSearchWindow window_ = null;
 
 #if UNITY_EDITOR_OSX
-		[MenuItem("Window/Toggle QuickSearch #`")]
+		[MenuItem("Assets/QuickSearch %t")]
 #else
-
-		[MenuItem("Window/Toggle QuickSearch %,")]
+		[MenuItem("Assets/QuickSearch %t")]
 #endif
 		private static void ToggleQuickSearch () {
 			if (QuickSearchWindow.Active != null) {
