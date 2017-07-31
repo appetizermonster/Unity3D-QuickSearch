@@ -31,17 +31,27 @@ namespace QuickSearch {
 		}
 
 		private static List<GameObject> GetSceneRoots () {
-			var prop = new HierarchyProperty(HierarchyType.GameObjects);
-			var expanded = new int[0];
 			var roots = new List<GameObject>();
 
-			while (prop.Next(expanded)) {
+#if UNITY_5_3_OR_NEWER
+			var sceneCount = UnityEngine.SceneManagement.SceneManager.sceneCount;
+			for (int i = 0; i < sceneCount; i++)
+			{
+				var scene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+				roots.AddRange(scene.GetRootGameObjects());
+			}
+#else
+			var prop = new HierarchyProperty(HierarchyType.GameObjects);
+			var expanded = new int[0];
+
+			while (prop.Next(expanded))
+			{
 				var go = prop.pptrValue as GameObject;
 				if (go == null)
 					continue;
 				roots.Add(go);
 			}
-
+#endif
 			return roots;
 		}
 
